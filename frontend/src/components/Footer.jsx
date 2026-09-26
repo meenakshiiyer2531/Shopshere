@@ -11,7 +11,7 @@ export default function Footer() {
           <div className="f-brand">ShopSphere.in</div>
           <p>
             DBMS Assignment 1 &middot; V Meenakshi Iyer (2025SL70043) &middot;
-            Mercy Mary (2025SL70043)
+            Mercy Mary (2025SL70044)
           </p>
           <p>
             React &middot; Express &middot; JSON file database &middot; Razorpay

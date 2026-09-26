@@ -9,7 +9,7 @@
     "dev": "node --watch server.js",
     "db:init": "node scripts/init-db.js"
   },
-  "author": "V Meenakshi Iyer (2025SL70043), Mercy Mary (2025SL70043)",
+  "author": "V Meenakshi Iyer (2025SL70043), Mercy Mary (2025SL70044)",
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",

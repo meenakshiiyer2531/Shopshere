@@ -3,7 +3,7 @@
 ## Student and Course Details
 
 - Name: V Meenakshi Iyer, Mercy Mary
-- ID: 2025SL70043, 2025SL70043
+- ID: 2025SL70043, 2025SL70044
 - Course Name / Number: Database Systems (DBMS) - Assignment 1
 - Date: 23 September 2025
 - Project Title: ShopSphere, a full-stack e-commerce web application

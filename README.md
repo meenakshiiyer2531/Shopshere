@@ -1,6 +1,6 @@
 # ShopSphere — Full-Stack E-Commerce App
 
-DBMS Assignment 1 | V Meenakshi Iyer (2025SL70043), Mercy Mary (2025SL70043)
+DBMS Assignment 1 | V Meenakshi Iyer (2025SL70043), Mercy Mary (2025SL70044)
 
 A modern e-commerce application built as a classic three-tier system:
 

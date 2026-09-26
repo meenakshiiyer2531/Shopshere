@@ -3,7 +3,7 @@
 | Field | Details |
 |-------|---------|
 | Name | V Meenakshi Iyer, Mercy Mary |
-| BITS ID | 2025SL70043, 2025SL70043 |
+| BITS ID | 2025SL70043, 2025SL70044 |
 | Course | Database Systems (DBMS) - Assignment 1 |
 | Date | 23 September 2025 |
 | Project | ShopSphere, a full-stack e-commerce application |
