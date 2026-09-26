@@ -1,6 +1,6 @@
 # ShopSphere - Database Design (DBMS)
 
-V Meenakshi Iyer (2025SL70043), Mercy Mary | Database Systems - Assignment 1
+V Meenakshi Iyer (2025SL70043), Mercy Mary (2025SL70043) | Database Systems - Assignment 1
 
 This document presents the database design for ShopSphere: the ER diagram, the
 relational schema (all tables, keys and constraints), the architecture diagram,

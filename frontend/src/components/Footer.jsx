@@ -9,7 +9,10 @@ export default function Footer() {
       <div className="footer">
         <div className="footer-inner">
           <div className="f-brand">ShopSphere.in</div>
-          <p>DBMS Assignment 1 &middot; V Meenakshi Iyer &middot; 2025SL70043</p>
+          <p>
+            DBMS Assignment 1 &middot; V Meenakshi Iyer (2025SL70043) &middot;
+            Mercy Mary (2025SL70043)
+          </p>
           <p>
             React &middot; Express &middot; JSON file database &middot; Razorpay
             &middot; {new Date().getFullYear()}

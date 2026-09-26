@@ -1,6 +1,6 @@
 /**
  * ShopSphere API server
- * DBMS Assignment 1 — V Meenakshi Iyer (2025SL70043)
+ * DBMS Assignment 1 — V Meenakshi Iyer (2025SL70043), Mercy Mary (2025SL70043)
  *
  * A small Express REST API. Product/order data is persisted to db.json through
  * src/db.js (the database layer). Payments are handled via Razorpay.
