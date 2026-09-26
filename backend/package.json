@@ -1,0 +1,21 @@
+{
+  "name": "shopsphere-backend",
+  "version": "1.1.0",
+  "description": "Express REST API for ShopSphere e-commerce app (DBMS Assignment 1)",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "db:init": "node scripts/init-db.js"
+  },
+  "author": "V Meenakshi Iyer (2025SL70043)",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "pg": "^8.23.0",
+    "razorpay": "^2.9.4"
+  }
+}

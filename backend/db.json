@@ -1,0 +1,113 @@
+{
+  "products": [
+    {
+      "id": "p1",
+      "name": "Aurora Wireless Headphones",
+      "price": 8999,
+      "category": "Electronics",
+      "stock": 24,
+      "rating": 4.7,
+      "description": "Immersive over-ear headphones with active noise cancellation, 40-hour battery life, and plush memory-foam ear cushions."
+    },
+    {
+      "id": "p2",
+      "name": "Nebula Smart Watch",
+      "price": 12499,
+      "category": "Electronics",
+      "stock": 15,
+      "rating": 4.5,
+      "description": "AMOLED always-on display, heart-rate and SpO2 tracking, 7-day battery, and 100+ sport modes."
+    },
+    {
+      "id": "p3",
+      "name": "Pixel Pro Mirrorless Camera",
+      "price": 64999,
+      "category": "Electronics",
+      "stock": 8,
+      "rating": 4.9,
+      "description": "24MP APS-C sensor, 4K60 video, in-body stabilisation, and a compact weather-sealed body."
+    },
+    {
+      "id": "p4",
+      "name": "Cloudstep Running Shoes",
+      "price": 4599,
+      "category": "Fashion",
+      "stock": 40,
+      "rating": 4.4,
+      "description": "Ultra-light knit uppers with responsive foam midsole for all-day comfort and long runs."
+    },
+    {
+      "id": "p5",
+      "name": "Heritage Leather Backpack",
+      "price": 5999,
+      "category": "Fashion",
+      "stock": 22,
+      "rating": 4.6,
+      "description": "Full-grain leather, padded 15-inch laptop sleeve, and antique brass hardware built to last."
+    },
+    {
+      "id": "p6",
+      "name": "Meridian Aviator Sunglasses",
+      "price": 2499,
+      "category": "Fashion",
+      "stock": 55,
+      "rating": 4.2,
+      "description": "Polarised UV400 lenses with a lightweight titanium frame and a scratch-resistant coating."
+    },
+    {
+      "id": "p7",
+      "name": "Ember Ceramic Pour-Over Set",
+      "price": 3299,
+      "category": "Home",
+      "stock": 30,
+      "rating": 4.8,
+      "description": "Hand-glazed ceramic dripper and server with a reusable stainless filter for the perfect brew."
+    },
+    {
+      "id": "p8",
+      "name": "Lumen Smart Desk Lamp",
+      "price": 3799,
+      "category": "Home",
+      "stock": 18,
+      "rating": 4.3,
+      "description": "Tunable warm-to-cool light, wireless charging base, and touch dimming with memory presets."
+    },
+    {
+      "id": "p9",
+      "name": "Verdant Indoor Plant Trio",
+      "price": 1899,
+      "category": "Home",
+      "stock": 47,
+      "rating": 4.5,
+      "description": "A curated set of low-maintenance air-purifying plants in matte stoneware pots."
+    },
+    {
+      "id": "p10",
+      "name": "The Art of Clean Code",
+      "price": 1299,
+      "category": "Books",
+      "stock": 60,
+      "rating": 4.9,
+      "description": "A modern guide to writing readable, maintainable software with practical real-world examples."
+    },
+    {
+      "id": "p11",
+      "name": "Atlas of the Cosmos",
+      "price": 2199,
+      "category": "Books",
+      "stock": 33,
+      "rating": 4.7,
+      "description": "A stunning hardcover journey through galaxies, nebulae and the frontiers of astronomy."
+    },
+    {
+      "id": "p12",
+      "name": "Mindful Mornings Journal",
+      "price": 899,
+      "category": "Books",
+      "stock": 75,
+      "rating": 4.4,
+      "description": "A guided 90-day journal with prompts for gratitude, focus and intentional living."
+    }
+  ],
+  "orders": []
+}

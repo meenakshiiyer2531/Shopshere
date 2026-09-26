@@ -1,0 +1,22 @@
+{
+  "name": "shopsphere-frontend",
+  "version": "1.0.0",
+  "description": "React storefront for ShopSphere (DBMS Assignment 1)",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "author": "V Meenakshi Iyer (2025SL70043)",
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.8"
+  }
+}
