@@ -73,6 +73,12 @@ export const api = {
   // ShopSphere AI (glass-box AI layer)
   ai: {
     status: () => fetch(`${BASE}/ai/status`).then(handle),
+    chat: (message) =>
+      fetch(`${BASE}/ai/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message }),
+      }).then(handle),
     ask: (nl) =>
       fetch(`${BASE}/ai/ask`, {
         method: "POST",
