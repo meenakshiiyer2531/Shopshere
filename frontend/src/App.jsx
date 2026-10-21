@@ -9,6 +9,7 @@ import Cart from "./pages/Cart.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import Orders from "./pages/Orders.jsx";
 import Admin from "./pages/Admin.jsx";
+import AIAssistant from "./components/AIAssistant.jsx";
 
 export default function App() {
   const [toast, setToast] = useState("");
@@ -34,6 +35,7 @@ export default function App() {
       </main>
       <Footer />
       <Toast message={toast} />
+      <AIAssistant notify={notify} />
     </>
   );
 }

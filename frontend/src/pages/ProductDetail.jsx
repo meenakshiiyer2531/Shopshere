@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { api, inr, monogram } from "../api.js";
 import { useCart } from "../context/CartContext.jsx";
+import PriceMeter from "../components/PriceMeter.jsx";
+import TasteStrip from "../components/TasteStrip.jsx";
 
 export default function ProductDetail({ notify }) {
   const { id } = useParams();
@@ -21,6 +23,7 @@ export default function ProductDetail({ notify }) {
   const inStock = product.stock > 0;
 
   return (
+    <>
     <div className="detail">
       <Link to="/" className="back">
         ← Back to results
@@ -52,6 +55,8 @@ export default function ProductDetail({ notify }) {
             {inStock ? "In stock" : "Out of stock"}
           </span>
 
+          <PriceMeter productId={product.id} />
+
           <div className="qty">
             <button onClick={() => setQty((q) => Math.max(1, q - 1))}>−</button>
             <span>{qty}</span>
@@ -81,5 +86,8 @@ export default function ProductDetail({ notify }) {
         </div>
       </div>
     </div>
+
+    <TasteStrip productId={product.id} notify={notify} />
+    </>
   );
 }

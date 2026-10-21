@@ -9,7 +9,7 @@ const BLANK = {
   description: "",
 };
 const CATEGORIES = ["Electronics", "Fashion", "Home", "Books"];
-const STATUSES = ["Confirmed", "Processing", "Shipped", "Delivered", "Cancelled"];
+const STATUSES = ["Confirmed", "Processing", "Shipped", "Delivered", "Cancelled", "Refund Initiated"];
 const AUTH_KEY = "shopsphere_admin";
 
 export default function Admin({ notify }) {
@@ -156,18 +156,25 @@ function AdminPanel({ notify, onSignOut }) {
         >
           Orders <span className="tab-count">{orders.length}</span>
         </button>
+        <button
+          className={`admin-tab ${tab === "ai" ? "active" : ""}`}
+          onClick={() => setTab("ai")}
+        >
+          AI Insights
+        </button>
       </div>
 
       {error && <div className="state state-error">{error}</div>}
 
-      {tab === "products" ? (
+      {tab === "products" && (
         <ProductsTab
           products={products}
           notify={notify}
           reload={loadProducts}
           setError={setError}
         />
-      ) : (
+      )}
+      {tab === "orders" && (
         <OrdersTab
           orders={orders}
           notify={notify}
@@ -175,6 +182,7 @@ function AdminPanel({ notify, onSignOut }) {
           setError={setError}
         />
       )}
+      {tab === "ai" && <AIInsightsTab />}
     </div>
   );
 }
@@ -318,6 +326,87 @@ function ProductsTab({ products, notify, reload, setError }) {
           </div>
         ))}
       </div>
+    </>
+  );
+}
+
+/* ---------- AI Insights (query log + support tickets) ---------- */
+function AIInsightsTab() {
+  const [logs, setLogs] = useState([]);
+  const [tickets, setTickets] = useState([]);
+  const [sub, setSub] = useState("log");
+
+  useEffect(() => {
+    api.ai.log(100).then(setLogs).catch(() => {});
+    api.ai.tickets(100).then(setTickets).catch(() => {});
+  }, []);
+
+  return (
+    <>
+      <p className="muted" style={{ marginBottom: 14 }}>
+        Every AI interaction is logged to the <code>ai_query_log</code> table, and
+        support actions open rows in <code>support_ticket</code> — a live audit
+        trail of the AI layer.
+      </p>
+
+      <div className="chips" style={{ marginBottom: 18 }}>
+        <button className={`chip ${sub === "log" ? "chip-active" : ""}`} onClick={() => setSub("log")}>
+          Query log <span className="tab-count">{logs.length}</span>
+        </button>
+        <button className={`chip ${sub === "tickets" ? "chip-active" : ""}`} onClick={() => setSub("tickets")}>
+          Support tickets <span className="tab-count">{tickets.length}</span>
+        </button>
+      </div>
+
+      {sub === "log" && (
+        <div className="admin-table ai-log">
+          <div className="admin-tr admin-th ai-log-tr">
+            <span>When</span>
+            <span>Feature</span>
+            <span>Engine</span>
+            <span>Query / SQL</span>
+            <span>Rows</span>
+          </div>
+          {logs.length === 0 && <div className="admin-tr">No AI activity yet.</div>}
+          {logs.map((l) => (
+            <div key={l.id} className="admin-tr ai-log-tr">
+              <span className="muted">{new Date(l.created_at).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" })}</span>
+              <span><span className="ai-feature-badge">{l.feature}</span></span>
+              <span className={`glassbox-engine engine-${l.engine}`}>{l.engine === "aicore" ? "AI Core" : "offline"}</span>
+              <span className="ai-log-sql">
+                {l.nl_text && <em>“{l.nl_text}”</em>}
+                {l.generated_sql && <code>{l.generated_sql}</code>}
+              </span>
+              <span>{l.result_count ?? "—"}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {sub === "tickets" && (
+        <div className="admin-table">
+          <div className="admin-tr admin-th">
+            <span>Ticket</span>
+            <span>Topic</span>
+            <span>Order</span>
+            <span>Resolution</span>
+            <span>Status</span>
+          </div>
+          {tickets.length === 0 && <div className="admin-tr">No support tickets yet.</div>}
+          {tickets.map((t) => (
+            <div key={t.id} className="admin-tr">
+              <span>#{t.id}</span>
+              <span><span className="ai-feature-badge">{t.topic}</span></span>
+              <span>{t.order_id || "—"}</span>
+              <span>
+                {t.resolution || "—"}
+                {t.refund_amount ? ` · ${inr(t.refund_amount)}` : ""}
+              </span>
+              <span className="status-badge" data-status={t.status}>{t.status}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </>
   );
 }

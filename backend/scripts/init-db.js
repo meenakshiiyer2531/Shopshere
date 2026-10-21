@@ -29,6 +29,45 @@ const SCHEMA = `
     status    TEXT NOT NULL DEFAULT 'Confirmed',
     date      TIMESTAMPTZ NOT NULL DEFAULT NOW()
   );
+
+  -- ---- AI layer objects ----
+
+  -- F5 Shop-by-Vibe: a generated full-text column over the product's text,
+  -- indexed with GIN for fast ranked search.
+  ALTER TABLE products
+    ADD COLUMN IF NOT EXISTS search_vector tsvector
+    GENERATED ALWAYS AS (
+      to_tsvector('english',
+        coalesce(name,'') || ' ' || coalesce(category,'') || ' ' || coalesce(description,''))
+    ) STORED;
+
+  CREATE INDEX IF NOT EXISTS products_search_idx
+    ON products USING GIN (search_vector);
+
+  -- Audit + analytics trail for every AI interaction (powers admin insights).
+  CREATE TABLE IF NOT EXISTS ai_query_log (
+    id            BIGSERIAL PRIMARY KEY,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    feature       TEXT NOT NULL,
+    nl_text       TEXT,
+    intent        JSONB,
+    generated_sql TEXT,
+    result_count  INTEGER,
+    engine        TEXT
+  );
+
+  -- Customer-care tickets raised by the AI support assistant. A ticket may be
+  -- linked to an order (refund/return/track) or stand alone (general query).
+  CREATE TABLE IF NOT EXISTS support_ticket (
+    id            BIGSERIAL PRIMARY KEY,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    order_id      TEXT REFERENCES orders(id) ON DELETE SET NULL,
+    topic         TEXT NOT NULL,
+    message       TEXT,
+    resolution    TEXT,
+    status        TEXT NOT NULL DEFAULT 'Open',
+    refund_amount INTEGER
+  );
 `;
 
 const PRODUCTS = [

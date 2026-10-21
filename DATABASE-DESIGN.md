@@ -1,11 +1,6 @@
 # ShopSphere - Database Design (DBMS)
 
-V Meenakshi Iyer (2025SL70043), Mercy Mary (2025SL70044) | Database Systems - Assignment 1
-
-This document presents the database design for ShopSphere: the ER diagram, the
-relational schema (all tables, keys and constraints), the architecture diagram,
-normalization notes, and how the current JSON store maps to a full relational
-DBMS.
+V Meenakshi Iyer (2025SL70043), Mercy Mary (2025SL70044) | Database Systems - Assignment
 
 ## 1. System Architecture (in relation to the DBMS)
 
@@ -312,3 +307,87 @@ the REST API or the React frontend.
 The diagrams above use Mermaid, which renders automatically on GitHub and in
 VS Code (with a Mermaid preview extension). To export images, paste the code
 blocks into https://mermaid.live.
+
+
+## 9. AI Layer — Database Objects and Queries (ShopSphere AI)
+
+The ShopSphere AI layer is deliberately **database-centric**: every AI feature's
+real work is a SQL query over this schema, and the UI shows that query (the
+"glass box"). The natural-language model never executes SQL — it returns a
+validated *intent* object, from which the backend builds a **parameterised**
+query (injection-safe). See `backend/src/ai/intent.js`.
+
+### 9.1 New / altered objects
+
+```sql
+-- Full-text search for "Shop by Vibe" (generated column + GIN index)
+ALTER TABLE products
+  ADD COLUMN search_vector tsvector
+  GENERATED ALWAYS AS (
+    to_tsvector('english',
+      coalesce(name,'') || ' ' || coalesce(category,'') || ' ' || coalesce(description,''))
+  ) STORED;
+CREATE INDEX products_search_idx ON products USING GIN (search_vector);
+
+-- Audit/analytics trail: one row per AI interaction
+CREATE TABLE ai_query_log (
+  id            BIGSERIAL PRIMARY KEY,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  feature       TEXT NOT NULL,           -- ask | vibe | budget | support ...
+  nl_text       TEXT,                    -- what the user typed
+  intent        JSONB,                   -- validated intent
+  generated_sql TEXT,                    -- the SQL that ran (rendered)
+  result_count  INTEGER,
+  engine        TEXT                     -- aicore | fallback
+);
+
+-- Customer-care tickets raised by the AI support assistant
+CREATE TABLE support_ticket (
+  id            BIGSERIAL PRIMARY KEY,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  order_id      TEXT REFERENCES orders(id) ON DELETE SET NULL,
+  topic         TEXT NOT NULL,           -- refund | return | track | ...
+  message       TEXT,
+  resolution    TEXT,
+  status        TEXT NOT NULL DEFAULT 'Open',
+  refund_amount INTEGER
+);
+```
+
+### 9.2 Representative queries (one per feature)
+
+```sql
+-- F1 Ask ShopSphere — NL compiled to a safe, parameterised search
+SELECT * FROM products
+WHERE LOWER(category) = LOWER($1) AND price <= $2 AND rating >= $3
+ORDER BY price ASC LIMIT $4;
+
+-- F4 Fair-Price Meter — window function: price percentile within a category
+SELECT PERCENT_RANK() OVER (PARTITION BY category ORDER BY price) FROM products;
+
+-- F5 Shop by Vibe — full-text ranking over the GIN-indexed tsvector
+SELECT *, ts_rank(search_vector, to_tsquery('english', $1)) AS rank
+FROM products WHERE search_vector @@ to_tsquery('english', $1)
+ORDER BY rank DESC;
+
+-- F3 Taste DNA — "bought together", mined from orders.items JSONB
+SELECT elem->>'id' AS pid, COUNT(*) AS freq
+FROM orders o, jsonb_array_elements(o.items) AS elem
+WHERE o.id IN (SELECT o2.id FROM orders o2, jsonb_array_elements(o2.items) e2
+               WHERE e2->>'id' = $1)
+  AND elem->>'id' <> $1
+GROUP BY elem->>'id' ORDER BY freq DESC;
+
+-- F6 Customer care — a refund mutates the order and logs a ticket
+UPDATE orders SET status = 'Refund Initiated' WHERE id = $1;
+INSERT INTO support_ticket (order_id, topic, resolution, status, refund_amount)
+VALUES ($1, 'refund', $2, 'Resolved', $3);
+```
+
+### 9.3 DBMS concepts demonstrated
+
+Parameterised dynamic queries and SQL-injection prevention; JOINs; aggregates
+with `GROUP BY`/`HAVING`; **window functions** (`PERCENT_RANK`); **full-text
+search** (`tsvector` + **GIN index**); **JSONB** querying
+(`jsonb_array_elements`); a foreign key with `ON DELETE SET NULL`; and an
+audit/logging table.

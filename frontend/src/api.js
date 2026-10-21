@@ -69,6 +69,41 @@ export const api = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     }).then(handle),
+
+  // ShopSphere AI (glass-box AI layer)
+  ai: {
+    status: () => fetch(`${BASE}/ai/status`).then(handle),
+    ask: (nl) =>
+      fetch(`${BASE}/ai/ask`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nl }),
+      }).then(handle),
+    vibe: (nl) =>
+      fetch(`${BASE}/ai/vibe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nl }),
+      }).then(handle),
+    budget: (nl) =>
+      fetch(`${BASE}/ai/budget`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nl }),
+      }).then(handle),
+    recommend: (productId, limit = 4) =>
+      fetch(`${BASE}/ai/recommend?productId=${encodeURIComponent(productId)}&limit=${limit}`).then(handle),
+    priceMeter: (productId) =>
+      fetch(`${BASE}/ai/price-meter/${encodeURIComponent(productId)}`).then(handle),
+    support: (message, orderId) =>
+      fetch(`${BASE}/ai/support`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, orderId }),
+      }).then(handle),
+    log: (limit = 50) => fetch(`${BASE}/ai/log?limit=${limit}`).then(handle),
+    tickets: (limit = 50) => fetch(`${BASE}/ai/tickets?limit=${limit}`).then(handle),
+  },
 };
 
 // Load the Razorpay Checkout script once, on demand.

@@ -152,3 +152,41 @@ base URL) at the deployed URL.
   HMAC-SHA256 before the order is saved. The secret key never reaches the
   browser.
 - Secrets live only in `backend/.env`, which is git-ignored and never committed.
+
+## ShopSphere AI — glass-box AI layer
+
+ShopSphere ships a cohesive **AI layer** whose defining idea is the *glass box*:
+every AI answer reveals the real database query behind it. The language model
+never executes SQL — it returns a validated *intent*, and the backend builds a
+**parameterised** (injection-safe) query from it. Powered by **SAP AI Core**
+(Generative AI Hub) when credentials are present, with a deterministic fallback
+engine so every feature works offline, for free, and never breaks a demo.
+
+Open it from the floating **✨ Ask AI** button (bottom-right). Six features:
+
+1. **Ask ShopSphere** — type a request in plain English
+   (*"wireless headphones under ₹3000 rated above 4, cheapest first"*); it
+   compiles to safe SQL, shows it, and returns products. Also does
+   conversational cart (*"add 2 of the cheapest"*).
+2. **Shop by Vibe** — mood/occasion search (*"gift for a techie dad"*) via
+   Postgres full-text search (`tsvector` + GIN index).
+3. **Budget Basket** — *"home-office setup for ₹15,000"* assembles a
+   complementary cart within budget, with an explanation and "Add all".
+4. **Fair-Price Meter** — on every product page, a one-glance gauge
+   (*"cheaper than 78% of Electronics"*) computed with a SQL window function.
+5. **Taste DNA** — explainable "bought together" recommendations mined from the
+   `orders.items` JSONB, with a plain-English reason and the query shown.
+6. **Customer-care chatbot** — tracks orders and resolves issues: a refund
+   request updates the order to *Refund Initiated* and logs a `support_ticket`
+   with the refund amount, right in the chat.
+
+Admin → **AI Insights** tab shows the live `ai_query_log` and `support_ticket`
+tables (a running audit trail of the AI layer).
+
+### Configuration
+
+Set the SAP AI Core keys in the project-root `.env` (see `backend/.env.example`
+for the variable names). Without them the app automatically runs the fallback
+engine. New AI endpoints live under `/api/ai/*`; the database objects are
+created idempotently by `npm run db:init --prefix backend`. Safety-critical
+logic has unit tests: `npm test --prefix backend`.

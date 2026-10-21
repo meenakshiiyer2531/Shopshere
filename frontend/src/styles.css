@@ -1475,3 +1475,530 @@ h2 {
     display: none;
   }
 }
+
+
+/* ============================================================
+   ShopSphere AI — glass-box AI layer
+   ============================================================ */
+
+/* ---- Glass box (reusable SQL reveal) ---- */
+.glassbox {
+  margin-top: 10px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.glassbox-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.glassbox-toggle:hover {
+  color: var(--accent);
+}
+.glassbox-icon {
+  color: var(--accent);
+}
+.glassbox-engine {
+  margin-left: auto;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.engine-aicore {
+  background: var(--good-soft);
+  color: var(--good);
+}
+.engine-fallback {
+  background: var(--surface);
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+.glassbox-body {
+  padding: 0 12px 12px;
+}
+.glassbox-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.glassbox-sql {
+  background: #1c2b46;
+  color: #e9edf5;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+}
+
+/* ---- Floating assistant ---- */
+.ai-fab {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 80;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 22px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 12px 30px -8px rgba(224, 85, 43, 0.7);
+  transition: transform 0.16s ease, background 0.16s;
+}
+.ai-fab:hover {
+  transform: translateY(-2px);
+  background: var(--accent-hover);
+}
+.ai-fab-open {
+  background: var(--navy);
+}
+
+.ai-panel {
+  position: fixed;
+  right: 22px;
+  bottom: 86px;
+  z-index: 80;
+  width: min(420px, calc(100vw - 32px));
+  max-height: min(78vh, 720px);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: rise 0.22s ease backwards;
+}
+.ai-panel-head {
+  padding: 16px 18px 12px;
+  background: linear-gradient(120deg, #16233b, #2a3d5f);
+  color: #fff;
+}
+.ai-panel-head strong {
+  font-family: var(--display);
+  font-size: 1.15rem;
+}
+.ai-panel-head .glassbox-engine {
+  margin-left: 8px;
+}
+.ai-panel-sub {
+  font-size: 0.78rem;
+  color: #c3cad8;
+  margin-top: 3px;
+}
+.ai-modes {
+  display: flex;
+  gap: 4px;
+  padding: 10px 12px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.ai-mode {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 9px 4px;
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--muted);
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.ai-mode:hover {
+  color: var(--ink);
+}
+.ai-mode-on {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.ai-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 16px;
+  min-height: 160px;
+}
+.ai-placeholder {
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 24px 10px;
+}
+.ai-resnote {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  font-weight: 600;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+/* product result rows */
+.ai-prod {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.ai-prod-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.ai-prod-name {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ai-prod-main:hover .ai-prod-name {
+  color: var(--accent);
+}
+.ai-prod-sub {
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+.ai-prod-price {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 1rem;
+}
+.ai-budget-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  font-weight: 700;
+  font-size: 0.86rem;
+}
+
+/* chat (support) */
+.ai-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ai-msg {
+  display: flex;
+  flex-direction: column;
+  max-width: 88%;
+}
+.ai-msg-user {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+.ai-msg-bot {
+  align-self: flex-start;
+}
+.ai-bubble {
+  padding: 10px 13px;
+  border-radius: 14px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+.ai-msg-bot .ai-bubble {
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  border-bottom-left-radius: 4px;
+}
+.ai-msg-user .ai-bubble {
+  background: var(--navy);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.ai-refund {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--good);
+  background: var(--good-soft);
+  padding: 7px 10px;
+  border-radius: 10px;
+}
+.ai-ticket {
+  margin-top: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+/* examples + input */
+.ai-examples {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 10px 14px 0;
+}
+.ai-ex {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 11px;
+  font: inherit;
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 0.14s;
+}
+.ai-ex:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.ai-input {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px 14px;
+}
+.ai-input input {
+  flex: 1;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font: inherit;
+  font-size: 0.9rem;
+  background: var(--surface);
+}
+.ai-input input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--ring);
+}
+.ai-input .btn {
+  padding: 10px 18px;
+}
+
+/* ---- Fair-Price Meter ---- */
+.pricemeter {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  background: var(--surface);
+}
+.pricemeter-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.pm-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.pm-great {
+  background: var(--good-soft);
+  color: var(--good);
+}
+.pm-fair {
+  background: #fdf1dc;
+  color: var(--gold);
+}
+.pm-premium {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.pm-claim {
+  font-size: 0.84rem;
+  color: var(--ink-soft);
+}
+.pm-track {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--good) 0%, var(--gold) 55%, var(--accent) 100%);
+  opacity: 0.85;
+}
+.pm-dot {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #fff;
+  border: 3px solid var(--navy);
+  transform: translate(-50%, -50%);
+  box-shadow: var(--shadow);
+}
+.pm-scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* ---- Taste DNA strip ---- */
+.taste {
+  margin-top: 28px;
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+.taste-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.taste-head h2 {
+  font-size: 1.4rem;
+}
+.taste-reason {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+.taste-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
+}
+.taste-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.taste-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+}
+.taste-mono {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-family: var(--display);
+  font-weight: 600;
+  color: #fff;
+}
+.taste-mono[data-cat="Electronics"] { background: linear-gradient(135deg, #2a4a86, #4f79c9); }
+.taste-mono[data-cat="Fashion"] { background: linear-gradient(135deg, #9d2f63, #d4699a); }
+.taste-mono[data-cat="Home"] { background: linear-gradient(135deg, #1f6f52, #43b58a); }
+.taste-mono[data-cat="Books"] { background: linear-gradient(135deg, #b06d1f, #e0a94e); }
+.taste-name {
+  font-weight: 700;
+  font-size: 0.85rem;
+  line-height: 1.3;
+  color: var(--ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.taste-card:hover .taste-name {
+  color: var(--accent);
+}
+.taste-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  gap: 6px;
+}
+.price-sm {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.taste-freq {
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--good);
+  background: var(--good-soft);
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+/* ---- Admin AI Insights ---- */
+.ai-feature-badge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--navy);
+  color: #fff;
+}
+.ai-log-tr {
+  grid-template-columns: 1.1fr 0.8fr 0.8fr 3fr 0.5fr !important;
+}
+.ai-log-sql {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.ai-log-sql em {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+}
+.ai-log-sql code {
+  font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+  font-size: 0.72rem;
+  color: var(--navy);
+  background: var(--surface-2);
+  padding: 4px 7px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.status-badge[data-status="Refund Initiated"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.status-badge[data-status="Resolved"],
+.status-badge[data-status="Closed"] {
+  background: var(--good-soft);
+  color: var(--good);
+}
+.status-badge[data-status="Open"],
+.status-badge[data-status="In Progress"] {
+  background: #fdf1dc;
+  color: var(--gold);
+}
+
+@media (max-width: 560px) {
+  .ai-log-tr {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}

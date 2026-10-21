@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "db:init": "node scripts/init-db.js"
+    "db:init": "node scripts/init-db.js",
+    "test": "node --test"
   },
   "author": "V Meenakshi Iyer (2025SL70043), Mercy Mary (2025SL70044)",
   "license": "MIT",
