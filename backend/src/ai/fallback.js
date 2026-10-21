@@ -44,7 +44,9 @@ function parse(nl, feature = "ask") {
   } else {
     const under = t.match(/(?:under|below|less than|upto|up to|cheaper than|within)\s*(?:₹|rs\.?)?\s*([\d,]+)/);
     if (under) priceMax = num(under[1]);
-    const over = t.match(/(?:over|above|more than|at least)\s*(?:₹|rs\.?)?\s*([\d,]+)/);
+    // Note: "above" is deliberately excluded here — it usually refers to a
+    // rating ("rated above 4"), not a price floor.
+    const over = t.match(/(?:over|more than|at least|starting at)\s*(?:₹|rs\.?)?\s*([\d,]+)/);
     if (over) priceMin = num(over[1]);
   }
 

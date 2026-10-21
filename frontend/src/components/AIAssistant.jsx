@@ -14,10 +14,10 @@ import GlassBox from "./GlassBox.jsx";
  *   Care   — customer-care chatbot that tracks orders & runs refunds/returns
  */
 const MODES = [
-  { key: "ask", label: "Ask", hint: "Describe what you want", examples: ["wireless headphones under 3000 rated above 4", "cheapest books", "add 2 of the cheapest speaker"] },
-  { key: "vibe", label: "Vibe", hint: "A mood or occasion", examples: ["gift for a techie dad", "cosy monsoon reading", "something for a coffee lover"] },
-  { key: "budget", label: "Budget", hint: "Build a cart to a budget", examples: ["home office setup for 15000", "gadgets under 10000", "a reading corner for 6000"] },
-  { key: "support", label: "Care", hint: "Orders, refunds & returns", examples: ["where is my order?", "I want a refund for order oab12cd", "my item arrived damaged"] },
+  { key: "ask", label: "Ask", hint: "Describe what you want", examples: ["electronics under 5000", "top rated books", "add the cheapest book"] },
+  { key: "vibe", label: "Vibe", hint: "A mood or occasion", examples: ["something for a coffee lover", "a camera for photos", "warm wool sweater"] },
+  { key: "budget", label: "Budget", hint: "Build a cart to a budget", examples: ["home office setup for 15000", "a reading corner for 4000", "gadgets under 12000"] },
+  { key: "support", label: "Care", hint: "Orders, refunds & returns", examples: ["where is my order?", "I want a refund", "my item arrived damaged"] },
 ];
 
 function ProductRow({ p, onAdd }) {
