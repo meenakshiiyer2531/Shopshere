@@ -14,6 +14,8 @@ const pool = require("../src/pool");
 function makeId(prefix) {
   return prefix + Math.random().toString(36).slice(2, 9);
 }
+// Roughly how many products to generate per non-book category.
+const PER_CAT = 68;
 const rnd = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const pick = (arr) => arr[rnd(0, arr.length - 1)];
 const rating = () => Math.round((Math.random() * 1.2 + 3.7) * 10) / 10; // 3.7–4.9
@@ -200,7 +202,7 @@ function buildCatalog() {
     // Aim for ~18 products per category.
     let made = 0;
     let guard = 0;
-    while (made < 18 && guard < 400) {
+    while (made < PER_CAT && guard < 8000) {
       guard++;
       const [type, min, max, desc] = pick(spec.types);
       const brand = pick(spec.brands);

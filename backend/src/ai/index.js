@@ -65,7 +65,15 @@ async function phrase(prompt) {
 
 // ---- Unified chatbot classifier ----
 
-const CATS = "Electronics, Fashion, Home, Books, Beauty, Sports, Toys, Grocery";
+const CATS =
+  "Electronics (gadgets, audio, computers, cameras, wearables), " +
+  "Fashion (clothing, shoes & footwear, bags, watches, sunglasses, accessories), " +
+  "Home (kitchen, cookware, decor, bedding, lamps, appliances), " +
+  "Books, " +
+  "Beauty (skincare, makeup, fragrance, haircare), " +
+  "Sports (fitness equipment, outdoor & game gear), " +
+  "Toys (kids' toys & games), " +
+  "Grocery (food & drink)";
 
 const CHAT_SYSTEM = `You are ShopSphere's shopping assistant. Read the user's message and reply with STRICT JSON only (no prose, no markdown):
 {

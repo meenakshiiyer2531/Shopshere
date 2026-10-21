@@ -14,12 +14,32 @@ router.get("/", async (req, res, next) => {
       products = products.filter((p) => p.category === category);
     }
     if (q) {
-      const term = q.toLowerCase();
-      products = products.filter(
-        (p) =>
-          p.name.toLowerCase().includes(term) ||
-          p.description.toLowerCase().includes(term)
-      );
+      const raw = q.toLowerCase();
+      // Understand a price cap/floor typed into the search bar.
+      const underM = raw.match(/(?:under|below|less than|upto|up to|within)\s*(?:₹|rs\.?)?\s*([\d,]+)/);
+      const overM = raw.match(/(?:over|more than|at least|above)\s*(?:₹|rs\.?)?\s*([\d,]+)/);
+      const priceMax = underM ? Number(underM[1].replace(/,/g, "")) : null;
+      const priceMin = overM ? Number(overM[1].replace(/,/g, "")) : null;
+
+      // Match on meaningful keywords (OR), ignoring numbers and filler words,
+      // so "running shoes under 6000" matches running shoes priced under 6000.
+      const STOP = new Set([
+        "under", "below", "less", "than", "upto", "up", "to", "within", "over",
+        "above", "more", "at", "least", "for", "the", "and", "with", "show",
+        "find", "me", "best", "cheap", "cheapest", "good", "some", "any", "buy",
+      ]);
+      const words = raw
+        .replace(/[^a-z0-9\s]/g, " ")
+        .split(/\s+/)
+        .filter((w) => w.length > 2 && Number.isNaN(Number(w)) && !STOP.has(w));
+
+      products = products.filter((p) => {
+        if (priceMax != null && p.price > priceMax) return false;
+        if (priceMin != null && p.price < priceMin) return false;
+        if (words.length === 0) return true;
+        const hay = `${p.name} ${p.description}`.toLowerCase();
+        return words.some((w) => hay.includes(w));
+      });
     }
     res.json(products);
   } catch (err) {

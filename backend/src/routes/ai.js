@@ -23,20 +23,30 @@ const inr = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
 
 /* ---------------- shared feature helpers ---------------- */
 
-// Natural-language product search (with a recall retry).
+// Natural-language product search. If a category+text search finds nothing,
+// retry with text only (the model may have guessed the wrong category), then
+// with category only, so a specific request still returns relevant products.
 async function doSearch(intent) {
-  let { params, text, rendered } = buildSearchQuery(intent);
-  let results = await db.runSelect(text, params);
-  if (results.length === 0 && intent.filters.category && intent.filters.text) {
-    const relaxed = { ...intent, filters: { ...intent.filters, text: null } };
-    const q = buildSearchQuery(relaxed);
-    const retry = await db.runSelect(q.text, q.params);
-    if (retry.length) {
-      results = retry;
-      rendered = q.rendered;
+  const run = async (it) => {
+    const q = buildSearchQuery(it);
+    return { rows: await db.runSelect(q.text, q.params), sql: q.rendered };
+  };
+  let { rows, sql } = await run(intent);
+
+  if (rows.length === 0 && intent.filters.category && intent.filters.text) {
+    const textOnly = await run({ ...intent, filters: { ...intent.filters, category: null } });
+    if (textOnly.rows.length) {
+      rows = textOnly.rows;
+      sql = textOnly.sql;
+    } else {
+      const catOnly = await run({ ...intent, filters: { ...intent.filters, text: null } });
+      if (catOnly.rows.length) {
+        rows = catOnly.rows;
+        sql = catOnly.sql;
+      }
     }
   }
-  return { results, sql: rendered, mode: "search" };
+  return { results: rows, sql, mode: "search" };
 }
 
 // Mood/occasion search via Postgres full-text (with ILIKE recall fallback).
