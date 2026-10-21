@@ -99,8 +99,23 @@ function buildSearchQuery(intent) {
     where.push(`rating >= $${params.length}`);
   }
   if (filters.text) {
-    params.push(`%${filters.text}%`);
-    where.push(`(name ILIKE $${params.length} OR description ILIKE $${params.length})`);
+    // Match each meaningful keyword against name/description (AND across words,
+    // OR across the two columns). Filler words like "cheap/best" are dropped so
+    // they don't sabotage the match ("cheap wireless earbuds" -> earbuds).
+    const FILLER = new Set([
+      "cheap", "cheapest", "best", "good", "nice", "affordable", "premium",
+      "top", "quality", "some", "any", "the", "for", "with", "and", "a", "an",
+    ]);
+    const words = filters.text
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")
+      .split(/\s+/)
+      .filter((w) => w.length > 2 && !FILLER.has(w))
+      .slice(0, 6);
+    for (const w of words) {
+      params.push(`%${w}%`);
+      where.push(`(name ILIKE $${params.length} OR description ILIKE $${params.length})`);
+    }
   }
 
   const orderBy = SORTS[intent.sort] || "rating DESC NULLS LAST";

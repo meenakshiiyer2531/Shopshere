@@ -58,9 +58,12 @@ test("buildSearchQuery neutralises SQL injection in the text filter", () => {
     filters: { text: "x'; DROP TABLE products; --" },
   });
   const { text, params } = buildSearchQuery(intent);
-  // The malicious string travels as a bound parameter, never as SQL.
+  // No injected SQL reaches the query text; only $-placeholders are emitted.
   assert.ok(!text.includes("DROP TABLE"));
-  assert.ok(params.some((p) => String(p).includes("DROP TABLE")));
+  assert.ok(!text.includes("'"));
+  assert.ok(!text.includes(";"));
+  // Any surviving tokens travel only as bound ILIKE patterns.
+  assert.ok(params.every((p) => typeof p !== "string" || /^%.*%$/.test(p) || Number.isFinite(Number(p))));
 });
 
 test("buildSearchQuery only emits allowlisted ORDER BY fragments", () => {

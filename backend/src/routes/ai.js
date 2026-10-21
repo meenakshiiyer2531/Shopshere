@@ -32,6 +32,7 @@ async function doSearch(intent) {
     return { rows: await db.runSelect(q.text, q.params), sql: q.rendered };
   };
   let { rows, sql } = await run(intent);
+  let relaxed = false;
 
   if (rows.length === 0 && intent.filters.category && intent.filters.text) {
     const textOnly = await run({ ...intent, filters: { ...intent.filters, category: null } });
@@ -43,10 +44,11 @@ async function doSearch(intent) {
       if (catOnly.rows.length) {
         rows = catOnly.rows;
         sql = catOnly.sql;
+        relaxed = true; // we had to drop the specific keywords
       }
     }
   }
-  return { results: rows, sql, mode: "search" };
+  return { results: rows, sql, mode: "search", relaxed };
 }
 
 // Mood/occasion search via Postgres full-text (with ILIKE recall fallback).
@@ -197,6 +199,10 @@ router.post("/chat", async (req, res, next) => {
 
     const route = await ai.interpretChat(message);
 
+    if (route.kind === "chat") {
+      return res.json({ kind: "chat", engine: route.engine, reply: route.reply, products: [] });
+    }
+
     if (route.kind === "support") {
       const r = await doSupport(message, route.support);
       await db.logAiQuery({
@@ -224,11 +230,14 @@ router.post("/chat", async (req, res, next) => {
       feature = "vibe";
     } else {
       const s = await doSearch(intent);
-      payload = { kind: "shop", mode: s.mode, products: s.results, sql: s.sql, cartAction: intent.action, quantity: intent.quantity };
+      payload = { kind: "shop", mode: s.mode, products: s.results, sql: s.sql, cartAction: intent.action, quantity: intent.quantity, relaxed: s.relaxed };
     }
 
     // A friendly reply: use the model's, else synthesise one from the result.
     let reply = route.reply;
+    if (payload.relaxed && payload.products.length) {
+      reply = "I couldn't find an exact match, but here are some related picks you might like:";
+    }
     if (!reply) {
       const n = payload.products.length;
       reply =

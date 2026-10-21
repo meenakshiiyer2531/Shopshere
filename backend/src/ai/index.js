@@ -75,10 +75,10 @@ const CATS =
   "Toys (kids' toys & games), " +
   "Grocery (food & drink)";
 
-const CHAT_SYSTEM = `You are ShopSphere's shopping assistant. Read the user's message and reply with STRICT JSON only (no prose, no markdown):
+const CHAT_SYSTEM = `You are ShopSphere's friendly shopping assistant. Read the user's message and reply with STRICT JSON only (no prose, no markdown):
 {
-  "kind": "shop" | "support",
-  "reply": "<one short, friendly sentence to show the user>",
+  "kind": "shop" | "support" | "chat",
+  "reply": "<one warm, natural sentence to show the user>",
   "shop": {
     "action": "search" | "budget_basket" | "vibe" | "add_to_cart" | "remove_from_cart",
     "filters": { "category": string|null, "text": string|null, "priceMin": number|null, "priceMax": number|null, "ratingMin": number|null },
@@ -87,16 +87,30 @@ const CHAT_SYSTEM = `You are ShopSphere's shopping assistant. Read the user's me
   },
   "support": { "topic": "track"|"refund"|"cancel"|"return"|"damaged"|"general", "orderId": string|null, "reason": string|null }
 }
-Rules:
-- kind = "support" for order status, refunds, returns, cancellations, damaged/wrong items. Otherwise kind = "shop".
-- category must be one of ${CATS} or null.
-- Prices are plain integers in rupees ("3k" -> 3000). Use null (NOT 0) for any price/rating/budget the user did not state.
-- action = "budget_basket" when the user gives a total amount to spend on a set/kit; "vibe" for a mood/occasion/gift; "add_to_cart" for "add N of ..."; else "search".
-- For "vibe", put 3-6 concrete catalog keywords (expand synonyms) in filters.text and the user's words in vibe.
-- "reply" is natural and specific, e.g. "Here are some great wireless headphones under ₹5,000." For support, confirm what you'll do.`;
+Departments (category): ${CATS}.
+How to classify:
+- kind="support": order status/tracking, refunds, returns, cancellations, damaged/wrong items, or questions about policies.
+- kind="chat": greetings, thanks, or vague "what can you do" messages with NO concrete product need. Reply warmly and suggest what they can ask; omit shop/support.
+- kind="shop": they want to find or buy products.
+  * action="vibe" for a mood, occasion, gift, or recipient ("gift for a coffee lover", "something cosy for winter", "present for my mum"). Put 3-6 concrete catalog keywords in filters.text (expand synonyms, e.g. coffee -> "coffee brew mug pour-over kettle") and the user's words in vibe. A price like "under 3000" goes in filters.priceMax — NOT budget.
+  * action="budget_basket" ONLY when they want MULTIPLE complementary items for a total spend — signalled by words like setup, kit, combo, bundle, outfit, wardrobe, "build me", "everything for". Put the amount in budget.
+  * action="add_to_cart"/"remove_from_cart" for cart edits ("add 2 of ...").
+  * otherwise action="search" (a specific product type, with any category/price/rating/sort).
+Rules: category must be an exact department name or null. Prices are plain integers in rupees ("3k"->3000). Use null (NOT 0) for anything the user did not state. "reply" is specific and friendly, e.g. "Here are some lovely gifts a coffee lover would enjoy under ₹3,000."`;
 
 function routeFallback(nl) {
   const text = (nl || "").toLowerCase();
+
+  // Greetings / small talk / help.
+  if (/^\s*(hi|hey|hello|yo|hiya|good (morning|evening|afternoon)|thanks|thank you|ok|okay|help|what can you do)\b/.test(text)) {
+    return {
+      kind: "chat",
+      reply:
+        "Hi! I can find products (\"wireless headphones under 5000\"), suggest gifts (\"something for a coffee lover\"), build a basket to a budget (\"home office setup for 15000\"), or help with an order or refund. What would you like?",
+      engine: "fallback",
+    };
+  }
+
   const isSupport = /\b(refund|return|cancel|damag|broken|defect|track|where is|delivery|order\s+o[a-z0-9]{4,}|money back)\b/.test(text);
   if (isSupport) {
     let topic = "general";
@@ -108,8 +122,13 @@ function routeFallback(nl) {
     const m = nl.match(/\bo[a-z0-9]{5,8}\b/i);
     return { kind: "support", support: { topic, orderId: m ? m[0] : null, reason: null }, reply: null, engine: "fallback" };
   }
-  const feature = /\bbudget|setup|kit|spend|build me|for \d/.test(text) ? "budget" : "ask";
+
+  // budget_basket only for real "set/kit/bundle" language; gifts are vibe.
+  const isBudget = /\b(setup|kit|combo|bundle|outfit|wardrobe|build me|everything for)\b/.test(text);
+  const isGift = /\b(gift|present|for (my|a|someone)|something (for|cosy|cozy|nice)|occasion|birthday|anniversary)\b/.test(text);
+  const feature = isBudget ? "budget" : isGift ? "vibe" : "ask";
   const intent = validateIntent(fallback.parse(nl, feature));
+  if (feature === "vibe" && !intent.vibe) intent.vibe = nl;
   return { kind: "shop", intent, reply: null, engine: "fallback" };
 }
 
@@ -118,6 +137,9 @@ async function interpretChat(nl) {
     try {
       const raw = await aicore.complete(CHAT_SYSTEM, nl);
       const p = JSON.parse(stripFences(raw));
+      if (p.kind === "chat") {
+        return { kind: "chat", reply: typeof p.reply === "string" ? p.reply : "How can I help you shop today?", engine: "aicore" };
+      }
       if (p.kind === "support") {
         const s = p.support || {};
         return {
