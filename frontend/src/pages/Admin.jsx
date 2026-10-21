@@ -372,7 +372,7 @@ function AIInsightsTab() {
             <div key={l.id} className="admin-tr ai-log-tr">
               <span className="muted">{new Date(l.created_at).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" })}</span>
               <span><span className="ai-feature-badge">{l.feature}</span></span>
-              <span className={`glassbox-engine engine-${l.engine}`}>{l.engine === "aicore" ? "AI Core" : "offline"}</span>
+              <span className={`glassbox-engine engine-${l.engine}`}>{l.engine === "aicore" ? "AI" : "offline"}</span>
               <span className="ai-log-sql">
                 {l.nl_text && <em>“{l.nl_text}”</em>}
                 {l.generated_sql && <code>{l.generated_sql}</code>}

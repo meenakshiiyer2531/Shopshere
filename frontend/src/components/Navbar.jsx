@@ -1,8 +1,6 @@
 import { useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext.jsx";
-
-const CATEGORIES = ["All", "Electronics", "Fashion", "Home", "Books", "Beauty", "Sports", "Toys", "Grocery"];
 
 export default function Navbar() {
   const { count } = useCart();
@@ -47,7 +45,7 @@ export default function Navbar() {
             <span className="az-act-2">& Orders</span>
           </Link>
           <Link to="/cart" className="az-cart" aria-label="Cart">
-            <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="9" cy="21" r="1" />
               <circle cx="20" cy="21" r="1" />
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
@@ -57,21 +55,6 @@ export default function Navbar() {
           </Link>
         </div>
       </div>
-
-      <nav className="az-sub">
-        {CATEGORIES.map((c) => (
-          <NavLink
-            key={c}
-            to={c === "All" ? "/" : `/?category=${encodeURIComponent(c)}`}
-            end={c === "All"}
-          >
-            {c === "All" ? "All" : c}
-          </NavLink>
-        ))}
-        <NavLink to="/admin" className="az-sub-admin">
-          Product manager
-        </NavLink>
-      </nav>
     </header>
   );
 }

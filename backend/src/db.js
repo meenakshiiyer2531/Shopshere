@@ -13,18 +13,24 @@ function makeId(prefix) {
   return prefix + Math.random().toString(36).slice(2, 8);
 }
 
+// Remove the internal full-text column before sending rows to clients.
+function scrub(rows) {
+  for (const r of rows) delete r.search_vector;
+  return rows;
+}
+
 module.exports = {
   // ---- Products ----
   async getProducts() {
     const { rows } = await pool.query(
       "SELECT * FROM products ORDER BY created_at ASC, id ASC"
     );
-    return rows;
+    return scrub(rows);
   },
 
   async getProduct(id) {
     const { rows } = await pool.query("SELECT * FROM products WHERE id = $1", [id]);
-    return rows[0] || null;
+    return scrub(rows)[0] || null;
   },
 
   async addProduct(product) {
@@ -118,7 +124,7 @@ module.exports = {
    */
   async runSelect(text, params) {
     const { rows } = await pool.query(text, params);
-    return rows;
+    return scrub(rows);
   },
 
   // Does the products table have the full-text search_vector column? Cached.
@@ -175,7 +181,7 @@ module.exports = {
     `LIMIT $2`,
   async coPurchase(productId, limit = 4) {
     const { rows } = await pool.query(this.coPurchaseSql, [productId, limit]);
-    return rows;
+    return scrub(rows);
   },
 
   // Cold-start recommendation fallback: top-rated products (optionally in a
@@ -198,7 +204,7 @@ module.exports = {
         ` ORDER BY rating DESC NULLS LAST, price ASC LIMIT $${params.length}`,
       params
     );
-    return rows;
+    return scrub(rows);
   },
 
   // F2 — Budget basket candidates within a per-item price ceiling.
@@ -220,7 +226,7 @@ module.exports = {
         ` ORDER BY rating DESC NULLS LAST, price ASC LIMIT $${params.length}`,
       params
     );
-    return rows;
+    return scrub(rows);
   },
 
   // Audit/analytics: record every AI interaction. Never throws into the request

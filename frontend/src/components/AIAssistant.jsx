@@ -42,7 +42,6 @@ function ProductResult({ p, onAdd }) {
 export default function AIAssistant({ notify }) {
   const { add } = useCart();
   const [open, setOpen] = useState(false);
-  const [engine, setEngine] = useState(null);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [msgs, setMsgs] = useState([
@@ -53,9 +52,6 @@ export default function AIAssistant({ notify }) {
   ]);
   const endRef = useRef(null);
 
-  useEffect(() => {
-    api.ai.status().then((s) => setEngine(s.engine)).catch(() => {});
-  }, []);
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs, open]);
@@ -114,11 +110,6 @@ export default function AIAssistant({ notify }) {
           <div className="ai-panel-head">
             <div>
               <strong>ShopSphere AI</strong>
-              {engine && (
-                <span className={`glassbox-engine engine-${engine}`}>
-                  {engine === "aicore" ? "SAP AI Core" : "offline engine"}
-                </span>
-              )}
             </div>
             <p className="ai-panel-sub">Ask anything — every answer shows the real database query behind it.</p>
           </div>

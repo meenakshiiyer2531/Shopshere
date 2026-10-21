@@ -5,7 +5,7 @@ import { useState } from "react";
  * that reveals the real database query (and optional note) behind an AI answer,
  * turning the database work into a visible, teachable feature.
  */
-export default function GlassBox({ sql, engine, note, label = "See the SQL behind this" }) {
+export default function GlassBox({ sql, note, label = "See the SQL behind this" }) {
   const [open, setOpen] = useState(false);
   if (!sql) return null;
 
@@ -14,11 +14,6 @@ export default function GlassBox({ sql, engine, note, label = "See the SQL behin
       <button className="glassbox-toggle" onClick={() => setOpen((o) => !o)}>
         <span className="glassbox-icon">{open ? "▾" : "▸"}</span>
         {label}
-        {engine && (
-          <span className={`glassbox-engine engine-${engine}`}>
-            {engine === "aicore" ? "SAP AI Core" : "offline engine"}
-          </span>
-        )}
       </button>
       {open && (
         <div className="glassbox-body">

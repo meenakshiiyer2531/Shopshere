@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api } from "../api.js";
 import ProductCard from "../components/ProductCard.jsx";
+import GlassBox from "../components/GlassBox.jsx";
 
 const CATEGORIES = ["All", "Electronics", "Fashion", "Home", "Books", "Beauty", "Sports", "Toys", "Grocery"];
 
@@ -13,11 +14,37 @@ export default function Home({ notify }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [ai, setAi] = useState(null); // { sql, engine } when an AI search ran
 
   useEffect(() => {
     setLoading(true);
+    setAi(null);
+
+    // Natural-language search: route the top search bar through the AI, which
+    // compiles it to safe SQL. Falls back to a plain keyword search on error.
+    if (q) {
+      (async () => {
+        try {
+          const r = await api.ai.ask(q);
+          setProducts(r.results);
+          setAi({ sql: r.sql });
+          setError("");
+        } catch {
+          try {
+            setProducts(await api.listProducts({ q }));
+            setError("");
+          } catch (e) {
+            setError(e.message);
+          }
+        } finally {
+          setLoading(false);
+        }
+      })();
+      return;
+    }
+
     api
-      .listProducts({ category, q })
+      .listProducts({ category })
       .then((data) => {
         setProducts(data);
         setError("");
@@ -28,6 +55,7 @@ export default function Home({ notify }) {
 
   const pickCategory = (c) => {
     const next = new URLSearchParams(searchParams);
+    next.delete("q"); // switching category starts a fresh browse
     if (c === "All") next.delete("category");
     else next.set("category", c);
     setSearchParams(next);
@@ -45,8 +73,8 @@ export default function Home({ notify }) {
             Great deals, <span className="accent">delivered fast.</span>
           </h1>
           <p>
-            Shop electronics, fashion, home and books at ShopSphere. Free
-            delivery on orders over Rs. 4,999.
+            Shop electronics, fashion, home, books and more at ShopSphere — or
+            just tell our AI what you need. Free delivery on orders over Rs. 4,999.
           </p>
           <a href="#catalog" className="btn btn-primary btn-lg">
             Shop all deals
@@ -68,11 +96,18 @@ export default function Home({ notify }) {
           )}
         </div>
 
+        {q && ai && (
+          <div className="ai-search-note">
+            <span className="ai-search-badge">✨ AI search</span>
+            <GlassBox sql={ai.sql} label="See the SQL this search generated" />
+          </div>
+        )}
+
         <div className="chips">
           {CATEGORIES.map((c) => (
             <button
               key={c}
-              className={`chip ${category === c ? "chip-active" : ""}`}
+              className={`chip ${category === c && !q ? "chip-active" : ""}`}
               onClick={() => pickCategory(c)}
             >
               {c}
@@ -80,10 +115,10 @@ export default function Home({ notify }) {
           ))}
         </div>
 
-        {loading && <div className="state">Loading products…</div>}
+        {loading && <div className="state">Searching…</div>}
         {error && <div className="state state-error">{error}</div>}
         {!loading && !error && products.length === 0 && (
-          <div className="state">No products match your search.</div>
+          <div className="state">No products match your search. Try the ✨ Ask AI assistant.</div>
         )}
 
         <div className="grid">
