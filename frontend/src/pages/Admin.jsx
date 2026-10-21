@@ -8,7 +8,7 @@ const BLANK = {
   stock: "",
   description: "",
 };
-const CATEGORIES = ["Electronics", "Fashion", "Home", "Books"];
+const CATEGORIES = ["Electronics", "Fashion", "Home", "Books", "Beauty", "Sports", "Toys", "Grocery"];
 const STATUSES = ["Confirmed", "Processing", "Shipped", "Delivered", "Cancelled", "Refund Initiated"];
 const AUTH_KEY = "shopsphere_admin";
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext.jsx";
 
-const CATEGORIES = ["All", "Electronics", "Fashion", "Home", "Books"];
+const CATEGORIES = ["All", "Electronics", "Fashion", "Home", "Books", "Beauty", "Sports", "Toys", "Grocery"];
 
 export default function Navbar() {
   const { count } = useCart();

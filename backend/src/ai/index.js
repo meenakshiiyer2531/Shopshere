@@ -63,4 +63,73 @@ async function phrase(prompt) {
   }
 }
 
-module.exports = { interpret, phrase, SYSTEM_PROMPT };
+// ---- Unified chatbot classifier ----
+
+const CATS = "Electronics, Fashion, Home, Books, Beauty, Sports, Toys, Grocery";
+
+const CHAT_SYSTEM = `You are ShopSphere's shopping assistant. Read the user's message and reply with STRICT JSON only (no prose, no markdown):
+{
+  "kind": "shop" | "support",
+  "reply": "<one short, friendly sentence to show the user>",
+  "shop": {
+    "action": "search" | "budget_basket" | "vibe" | "add_to_cart" | "remove_from_cart",
+    "filters": { "category": string|null, "text": string|null, "priceMin": number|null, "priceMax": number|null, "ratingMin": number|null },
+    "sort": "price_asc" | "price_desc" | "rating_desc" | "newest" | null,
+    "limit": number, "quantity": number|null, "budget": number|null, "vibe": string|null
+  },
+  "support": { "topic": "track"|"refund"|"cancel"|"return"|"damaged"|"general", "orderId": string|null, "reason": string|null }
+}
+Rules:
+- kind = "support" for order status, refunds, returns, cancellations, damaged/wrong items. Otherwise kind = "shop".
+- category must be one of ${CATS} or null.
+- Prices are plain integers in rupees ("3k" -> 3000). Use null (NOT 0) for any price/rating/budget the user did not state.
+- action = "budget_basket" when the user gives a total amount to spend on a set/kit; "vibe" for a mood/occasion/gift; "add_to_cart" for "add N of ..."; else "search".
+- For "vibe", put 3-6 concrete catalog keywords (expand synonyms) in filters.text and the user's words in vibe.
+- "reply" is natural and specific, e.g. "Here are some great wireless headphones under ₹5,000." For support, confirm what you'll do.`;
+
+function routeFallback(nl) {
+  const text = (nl || "").toLowerCase();
+  const isSupport = /\b(refund|return|cancel|damag|broken|defect|track|where is|delivery|order\s+o[a-z0-9]{4,}|money back)\b/.test(text);
+  if (isSupport) {
+    let topic = "general";
+    if (/refund|money back/.test(text)) topic = "refund";
+    else if (/damag|broken|defect|wrong/.test(text)) topic = "damaged";
+    else if (/cancel/.test(text)) topic = "cancel";
+    else if (/return|exchange/.test(text)) topic = "return";
+    else if (/track|where|status|delivery/.test(text)) topic = "track";
+    const m = nl.match(/\bo[a-z0-9]{5,8}\b/i);
+    return { kind: "support", support: { topic, orderId: m ? m[0] : null, reason: null }, reply: null, engine: "fallback" };
+  }
+  const feature = /\bbudget|setup|kit|spend|build me|for \d/.test(text) ? "budget" : "ask";
+  const intent = validateIntent(fallback.parse(nl, feature));
+  return { kind: "shop", intent, reply: null, engine: "fallback" };
+}
+
+async function interpretChat(nl) {
+  if (config.ai.enabled) {
+    try {
+      const raw = await aicore.complete(CHAT_SYSTEM, nl);
+      const p = JSON.parse(stripFences(raw));
+      if (p.kind === "support") {
+        const s = p.support || {};
+        return {
+          kind: "support",
+          support: { topic: s.topic || "general", orderId: s.orderId || null, reason: s.reason || null },
+          reply: typeof p.reply === "string" ? p.reply : null,
+          engine: "aicore",
+        };
+      }
+      return {
+        kind: "shop",
+        intent: validateIntent(p.shop || {}),
+        reply: typeof p.reply === "string" ? p.reply : null,
+        engine: "aicore",
+      };
+    } catch {
+      /* fall through */
+    }
+  }
+  return routeFallback(nl);
+}
+
+module.exports = { interpret, interpretChat, phrase, SYSTEM_PROMPT };

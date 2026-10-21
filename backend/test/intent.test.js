@@ -10,6 +10,20 @@ const {
   buildVibeQuery,
 } = require("../src/ai/intent");
 
+test("validateIntent treats 0 price/rating/budget as unset (not a real filter)", () => {
+  const v = validateIntent({
+    filters: { category: "Electronics", priceMin: 0, priceMax: 0, ratingMin: 0 },
+    budget: 0,
+  });
+  assert.equal(v.filters.priceMin, null);
+  assert.equal(v.filters.priceMax, null);
+  assert.equal(v.filters.ratingMin, null);
+  assert.equal(v.budget, null);
+  // ...and the built query must not contain a "price <= 0" clause.
+  const { text } = buildSearchQuery(v);
+  assert.ok(!text.includes("price <="));
+});
+
 test("validateIntent defaults unknown action to search", () => {
   assert.equal(validateIntent({ action: "DROP TABLE" }).action, "search");
 });

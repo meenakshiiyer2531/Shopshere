@@ -34,6 +34,15 @@ function clampNum(v, min, max) {
   return Math.min(max, Math.max(min, n));
 }
 
+// Like clampNum, but treats 0 (and blanks) as "unset" -> null. LLMs often fill
+// unused numeric fields with 0, which must NOT become a real filter such as
+// `price <= 0` (which would match nothing).
+function optNum(v, min, max) {
+  const n = Number(v);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return Math.min(max, Math.max(min, n));
+}
+
 function cleanText(v, maxLen = 120) {
   if (typeof v !== "string") return null;
   const t = v.trim().slice(0, maxLen);
@@ -50,9 +59,9 @@ function validateIntent(raw = {}) {
   const filters = {
     category: cleanText(f.category, 40),
     text: cleanText(f.text, 80),
-    priceMin: clampNum(f.priceMin, 0, 100_000_000),
-    priceMax: clampNum(f.priceMax, 0, 100_000_000),
-    ratingMin: clampNum(f.ratingMin, 0, 5),
+    priceMin: optNum(f.priceMin, 0, 100_000_000),
+    priceMax: optNum(f.priceMax, 0, 100_000_000),
+    ratingMin: optNum(f.ratingMin, 0, 5),
   };
   const sort = Object.hasOwn(SORTS, raw.sort) ? raw.sort : null;
 
@@ -62,7 +71,7 @@ function validateIntent(raw = {}) {
     sort,
     limit: clampNum(raw.limit, 1, 50) || 20,
     quantity: clampNum(raw.quantity, 1, 99) || 1,
-    budget: clampNum(raw.budget, 0, 100_000_000),
+    budget: optNum(raw.budget, 0, 100_000_000),
     vibe: cleanText(raw.vibe || raw.filters?.vibe, 120),
   };
 }
