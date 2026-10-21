@@ -190,3 +190,21 @@ for the variable names). Without them the app automatically runs the fallback
 engine. New AI endpoints live under `/api/ai/*`; the database objects are
 created idempotently by `npm run db:init --prefix backend`. Safety-critical
 logic has unit tests: `npm test --prefix backend`.
+
+## Team & contributions
+
+| Member | BITS ID | Phase 2 focus |
+|--------|---------|---------------|
+| V Meenakshi Iyer | 2025SL70043 | Backend & database — Neon Postgres migration, SAP AI Core engine + fallback, SQL-injection-safe intent/query layer, all `/api/ai/*` routes, window-function / JSONB / full-text queries, unit tests, Vercel deployment |
+| Mercy Mary | 2025SL70044 | Frontend & data — conversational chatbot + glass-box UI, Fair-Price Meter & Taste DNA, admin AI Insights, the ~620-product catalog, QA, documentation |
+
+A full, dated, step-by-step split of the Phase 2 work between both members is in
+[Work-Plan-and-Progress.md](Work-Plan-and-Progress.md) (Section 8).
+
+## Version history
+
+- **v2.0 (Oct 2026)** — Migrated to Neon Postgres; added the ShopSphere AI
+  glass-box layer (NL→SQL search, Shop by Vibe, Budget Basket, Fair-Price Meter,
+  Taste DNA, customer-care chatbot) and grew the catalog to ~620 products.
+- **v1.0 (Sep 2025)** — Original three-tier storefront with cart, Razorpay
+  checkout, order history and admin product CRUD.
