@@ -204,9 +204,9 @@ Books, Beauty, Sports, Toys, Grocery).
 
 | Member | BITS ID | Primary ownership |
 |--------|---------|-------------------|
-| **** | 2025SL70044 | Backend & database: Neon Postgres migration, SAP AI Core engine + fallback, intent validation and the parameterised query builder (SQL-injection safety), all `/api/ai/*` routes, window-function / JSONB / full-text queries, unit tests, and cloud (Vercel) deployment + environment configuration. |
-| **V Meenakshi Iyer** | 2025SL70043 | Frontend & data: the conversational chatbot and glass-box UI, Fair-Price Meter and Taste DNA components, admin "AI Insights" tab, the ~620-product catalog generator, category/theme styling, manual QA of every feature, and documentation (README, DATABASE-DESIGN, this plan). |
-| **Both** | — | Phase 2 design/brainstorming, feature acceptance review, and final submission checks (done in pair sessions). |
+| **V Meenakshi Iyer** | 2025SL70043 | The ShopSphere AI layer end to end: the SAP AI Core engine and deterministic fallback, intent validation and the SQL-injection-safe parameterised query builder, the six AI features (NL search, Shop by Vibe, Budget Basket, Fair-Price Meter, Taste DNA, customer-care chatbot), the `/api/ai/*` routes and their SQL (window functions, JSONB, full-text), the assistant interface (chatbot, glass box, price meter, taste strip, admin AI Insights), and the unit tests. |
+| **Mercy Mary** | 2025SL70044 | The Neon Postgres migration and schema, the ~620-product catalog and the new departments, the non-AI UI changes (header and branding cleanup), product-API payload cleanup, Vercel deployment and environment setup, documentation, and QA/regression testing. |
+| **Both** | — | Phase 2 design kick-off and the final submission review. |
 
 ## 8. Step-by-Step Task Breakdown and Progress (Phase 2)
 
@@ -219,8 +219,8 @@ All steps below are **Done**.
 |------|------|-------|-------------|
 | 1 | Brainstorm the AI feature set; agree the "glass-box" principle (always show the SQL) | Both | 14 Oct |
 | 2 | Write the design spec (`docs/superpowers/specs/2026-10-21-shopsphere-ai-layer-design.md`) | MI | 14 Oct |
-| 3 | Migrate persistence from `db.json` to Neon Postgres via the `pg` pool in `src/db.js` | MI | 14 Oct |
-| 4 | Add idempotent schema in `scripts/init-db.js` (`products`, `orders`) and verify it runs on Neon | MI | 14 Oct |
+| 3 | Migrate persistence from `db.json` to Neon Postgres via the `pg` pool in `src/db.js` | MM | 14 Oct |
+| 4 | Add idempotent schema in `scripts/init-db.js` (`products`, `orders`) and verify it runs on Neon | MM | 14 Oct |
 | 5 | Confirm REST API + UI unchanged after the DBMS swap (regression check) | MM | 14 Oct |
 
 ### 8.2 AI engine & safety core
@@ -242,8 +242,8 @@ All steps below are **Done**.
 | 13 | Add `/api/ai/ask` (NL search) + the `ai_query_log` audit table | MI | 16 Oct |
 | 14 | Add `search_vector` generated column + **GIN index**; wire `/api/ai/vibe` full-text search | MI | 16 Oct |
 | 15 | Add Fair-Price Meter query using `PERCENT_RANK()` window function + `/api/ai/price-meter` | MI | 16 Oct |
-| 16 | Build the reusable glass-box SQL panel component (`GlassBox.jsx`) | MM | 16 Oct |
-| 17 | Build the `PriceMeter.jsx` gauge on the product page | MM | 16 Oct |
+| 16 | Build the reusable glass-box SQL panel component (`GlassBox.jsx`) | MI | 16 Oct |
+| 17 | Build the `PriceMeter.jsx` gauge on the product page | MI | 16 Oct |
 
 ### 8.4 Features F3, F2 (recommender, budget)
 
@@ -251,8 +251,8 @@ All steps below are **Done**.
 |------|------|-------|-------------|
 | 18 | Write the JSONB co-purchase query (self-join on `orders.items`) + cold-start fallback | MI | 17 Oct |
 | 19 | Add `/api/ai/recommend` and the Budget Basket selection logic + `/api/ai/budget` | MI | 17 Oct |
-| 20 | Build `TasteStrip.jsx` (explainable recommendations) on the product page | MM | 17 Oct |
-| 21 | Integrate PriceMeter + TasteStrip into `ProductDetail.jsx` | MM | 17 Oct |
+| 20 | Build `TasteStrip.jsx` (explainable recommendations) on the product page | MI | 17 Oct |
+| 21 | Integrate PriceMeter + TasteStrip into `ProductDetail.jsx` | MI | 17 Oct |
 
 ### 8.5 Feature F6 (customer-care chatbot)
 
@@ -261,17 +261,17 @@ All steps below are **Done**.
 | 22 | Design and create the `support_ticket` table (FK to `orders`, `ON DELETE SET NULL`) | MI | 18 Oct |
 | 23 | Build the support classifier `src/ai/support.js` (refund/return/track/damaged) | MI | 18 Oct |
 | 24 | Implement the refund flow: `UPDATE orders` → `Refund Initiated` + log a ticket | MI | 18 Oct |
-| 25 | End-to-end test: create order → chatbot refund → verify DB status + ticket | Both | 18 Oct |
+| 25 | End-to-end test: create order → chatbot refund → verify DB status + ticket | MI | 18 Oct |
 
 ### 8.6 Chatbot UI, catalog & departments
 
 | Step | Task | Owner | Date (2026) |
 |------|------|-------|-------------|
-| 26 | Build the floating AI assistant panel + API client methods (`api.ai.*`) | MM | 19 Oct |
-| 27 | Add the admin "AI Insights" tab (live `ai_query_log` + `support_ticket`) | MM | 19 Oct |
+| 26 | Build the floating AI assistant panel + API client methods (`api.ai.*`) | MI | 19 Oct |
+| 27 | Add the admin "AI Insights" tab (live `ai_query_log` + `support_ticket`) | MI | 19 Oct |
 | 28 | Write the `seed-catalog.js` generator and seed ~150 products | MM | 20 Oct |
 | 29 | Add 4 new departments (Beauty, Sports, Toys, Grocery) + category colours in nav/home/admin | MM | 20 Oct |
-| 30 | Collapse the four mode tabs into one auto-routing conversational chatbot (`/api/ai/chat`) | Both | 20 Oct |
+| 30 | Collapse the four mode tabs into one auto-routing conversational chatbot (`/api/ai/chat`) | MI | 20 Oct |
 
 ### 8.7 Hardening, UX fixes, deployment & docs (21 Oct)
 
@@ -279,12 +279,12 @@ All steps below are **Done**.
 |------|------|-------|-------------|
 | 31 | Fix: treat model `0` for price/rating/budget as "unset" (was returning no rows) | MI | 21 Oct |
 | 32 | Smarter search cascade: honour price caps, relax wrong category/keywords, honest "related picks" | MI | 21 Oct |
-| 33 | Natural-language **main search bar** routed through the AI, showing the generated SQL on results | MM | 21 Oct |
+| 33 | Natural-language **main search bar** routed through the AI, showing the generated SQL on results | MI | 21 Oct |
 | 34 | Spread catalog prices per product type and grow catalog to ~620 products | MM | 21 Oct |
 | 35 | Remove engine branding from the UI and the header category bar (per review) | MM | 21 Oct |
-| 36 | Fix: add the missing `api.ai.chat` client method (chatbot error) | MM | 21 Oct |
-| 37 | Strip internal `search_vector` from all product API responses | MI | 21 Oct |
-| 38 | Set SAP AI Core env vars in Vercel; deploy backend + frontend to production | MI | 21 Oct |
+| 36 | Fix: add the missing `api.ai.chat` client method (chatbot error) | MI | 21 Oct |
+| 37 | Strip internal `search_vector` from all product API responses | MM | 21 Oct |
+| 38 | Set SAP AI Core env vars in Vercel; deploy backend + frontend to production | MM | 21 Oct |
 | 39 | Update README and DATABASE-DESIGN (AI objects, queries, concepts) and this plan | MM | 21 Oct |
 | 40 | Final pair review and production smoke test of all six features | Both | 21 Oct |
 

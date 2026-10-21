@@ -195,8 +195,8 @@ logic has unit tests: `npm test --prefix backend`.
 
 | Member | BITS ID | Phase 2 focus |
 |--------|---------|---------------|
-| V Meenakshi Iyer | 2025SL70043 | Backend & database — Neon Postgres migration, SAP AI Core engine + fallback, SQL-injection-safe intent/query layer, all `/api/ai/*` routes, window-function / JSONB / full-text queries, unit tests, Vercel deployment |
-| Mercy Mary | 2025SL70044 | Frontend & data — conversational chatbot + glass-box UI, Fair-Price Meter & Taste DNA, admin AI Insights, the ~620-product catalog, QA, documentation |
+| V Meenakshi Iyer | 2025SL70043 | The ShopSphere AI layer — SAP AI Core engine + fallback, the injection-safe intent/query layer, the six AI features, all `/api/ai/*` routes and their SQL (window functions, JSONB, full-text), the assistant UI (chatbot, glass box, price meter, taste strip, admin AI Insights), and the unit tests |
+| Mercy Mary | 2025SL70044 | Neon Postgres migration & schema, the ~620-product catalog & departments, non-AI UI and payload cleanup, Vercel deployment & environment, documentation, and QA |
 
 A full, dated, step-by-step split of the Phase 2 work between both members is in
 [Work-Plan-and-Progress.md](Work-Plan-and-Progress.md) (Section 8).
