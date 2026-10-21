@@ -78,12 +78,33 @@ function parse(nl, feature = "ask") {
 
   const category = detectCategory(t);
 
-  // Free-text term: strip out the structural words so a keyword search is useful.
-  const term = text
-    .replace(/(under|below|less than|upto|up to|over|above|more than|between|and|rated|rating|stars?|cheapest|cheap|best|top|add|remove|buy|₹|rs\.?|budget|for a|for|the|me|show|find|a|an|with|of|under)\b/g, " ")
-    .replace(/[\d,]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  // Free-text term: keep only meaningful product words. Drop structural words,
+  // numbers, and any category keyword (so "books under 2000" doesn't become a
+  // doomed ILIKE '%books%' — the category filter already handles it).
+  const catWords = new Set(
+    Object.values(CATEGORY_WORDS).flat().concat(["electronics", "fashion", "home", "books"])
+  );
+  const STOP = new Set([
+    "under", "below", "less", "than", "upto", "up", "over", "above", "more",
+    "between", "and", "rated", "rating", "star", "stars", "cheapest", "cheap",
+    "best", "top", "add", "remove", "buy", "show", "find", "me", "the", "with",
+    "of", "for", "a", "an", "to", "my", "please", "want", "need", "some", "any",
+  ]);
+  const deplural = (w) => (w.endsWith("s") ? w.slice(0, -1) : w);
+  const term =
+    text
+      .replace(/[^a-z0-9\s]/gi, " ")
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(
+        (w) =>
+          w.length > 2 &&
+          Number.isNaN(Number(w)) &&
+          !STOP.has(w) &&
+          !catWords.has(w) &&
+          !catWords.has(deplural(w))
+      )
+      .join(" ") || null;
 
   return {
     action,

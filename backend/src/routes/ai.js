@@ -23,8 +23,20 @@ router.post("/ask", async (req, res, next) => {
 
     // Cart actions resolve to matching products; the client performs the
     // actual add/remove against its localStorage cart.
-    const { text, params, rendered } = buildSearchQuery(intent);
-    const results = await db.runSelect(text, params);
+    let { text, params, rendered } = buildSearchQuery(intent);
+    let results = await db.runSelect(text, params);
+
+    // Recall fallback: a category + free-text search that matches nothing often
+    // means the text was redundant with the category — retry without it.
+    if (results.length === 0 && intent.filters.category && intent.filters.text) {
+      const relaxed = { ...intent, filters: { ...intent.filters, text: null } };
+      const q = buildSearchQuery(relaxed);
+      const retry = await db.runSelect(q.text, q.params);
+      if (retry.length) {
+        results = retry;
+        rendered = q.rendered;
+      }
+    }
 
     await db.logAiQuery({
       feature: "ask",
