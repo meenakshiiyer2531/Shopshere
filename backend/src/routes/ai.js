@@ -26,29 +26,31 @@ const inr = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
 // Natural-language product search. If a category+text search finds nothing,
 // retry with text only (the model may have guessed the wrong category), then
 // with category only, so a specific request still returns relevant products.
+// Natural-language product search. Price constraints are always respected
+// (never show a ₹15,999 item for "under 2000"). We relax a possibly-wrong
+// category first, and only drop the keywords as a last resort ("relaxed").
 async function doSearch(intent) {
-  const run = async (it) => {
-    const q = buildSearchQuery(it);
+  const run = async (override) => {
+    const q = buildSearchQuery({ ...intent, filters: { ...intent.filters, ...override } });
     return { rows: await db.runSelect(q.text, q.params), sql: q.rendered };
   };
-  let { rows, sql } = await run(intent);
-  let relaxed = false;
 
-  if (rows.length === 0 && intent.filters.category && intent.filters.text) {
-    const textOnly = await run({ ...intent, filters: { ...intent.filters, category: null } });
-    if (textOnly.rows.length) {
-      rows = textOnly.rows;
-      sql = textOnly.sql;
-    } else {
-      const catOnly = await run({ ...intent, filters: { ...intent.filters, text: null } });
-      if (catOnly.rows.length) {
-        rows = catOnly.rows;
-        sql = catOnly.sql;
-        relaxed = true; // we had to drop the specific keywords
-      }
-    }
+  const full = await run({});
+  if (full.rows.length) return { results: full.rows, sql: full.sql, mode: "search", relaxed: false };
+
+  // Category may be a wrong guess — try the keywords without it (keep price).
+  if (intent.filters.category && intent.filters.text) {
+    const noCat = await run({ category: null });
+    if (noCat.rows.length) return { results: noCat.rows, sql: noCat.sql, mode: "search", relaxed: false };
   }
-  return { results: rows, sql, mode: "search", relaxed };
+
+  // Nothing matched the keywords — show related items in the category/price.
+  if (intent.filters.text && (intent.filters.category || intent.filters.priceMax)) {
+    const noText = await run({ text: null });
+    if (noText.rows.length) return { results: noText.rows, sql: noText.sql, mode: "search", relaxed: true };
+  }
+
+  return { results: full.rows, sql: full.sql, mode: "search", relaxed: false };
 }
 
 // Mood/occasion search via Postgres full-text (with ILIKE recall fallback).

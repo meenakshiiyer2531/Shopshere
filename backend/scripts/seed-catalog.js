@@ -14,8 +14,6 @@ const pool = require("../src/pool");
 function makeId(prefix) {
   return prefix + Math.random().toString(36).slice(2, 9);
 }
-// Roughly how many products to generate per non-book category.
-const PER_CAT = 68;
 const rnd = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const pick = (arr) => arr[rnd(0, arr.length - 1)];
 const rating = () => Math.round((Math.random() * 1.2 + 3.7) * 10) / 10; // 3.7–4.9
@@ -195,34 +193,38 @@ function buildCatalog() {
     seenNames.add(title);
   }
 
-  // Everything else: Brand + Type, generated with variety.
+  // Everything else: Brand + Type, generated with variety. For EACH product
+  // type we create several variants spread across its price range, so every
+  // type has budget AND premium options (e.g. headphones under 10k and over).
   const COLOURS = ["Midnight", "Graphite", "Ivory", "Sand", "Forest", "Crimson", "Slate", "Rose Gold", "Ocean", "Pearl"];
+  const PRICE_POINTS = [0.06, 0.2, 0.34, 0.5, 0.66, 0.82, 0.95]; // fractions of [min,max]
+  const snap = (p) => {
+    const step = p > 10000 ? 500 : p > 2000 ? 100 : 10;
+    return Math.max(10, Math.round(p / step) * step - 1);
+  };
+
   for (const [category, spec] of Object.entries(SPECS)) {
     if (category === "Books") continue;
-    // Aim for ~18 products per category.
-    let made = 0;
-    let guard = 0;
-    while (made < PER_CAT && guard < 8000) {
-      guard++;
-      const [type, min, max, desc] = pick(spec.types);
-      const brand = pick(spec.brands);
-      const colour = pick(COLOURS);
-      // Vary the name so brand+type combos stay unique.
-      const name =
-        Math.random() < 0.5
-          ? `${brand} ${type}`
-          : `${brand} ${colour} ${type}`;
-      if (seenNames.has(name)) continue;
-      seenNames.add(name);
-      products.push({
-        name,
-        price: price(min, max),
-        category,
-        stock: stock(),
-        rating: rating(),
-        description: `The ${name} — ${desc}.`,
+    for (const [type, min, max, desc] of spec.types) {
+      PRICE_POINTS.forEach((frac, k) => {
+        const jitter = (Math.random() - 0.5) * 0.06;
+        const p = snap(min + (max - min) * Math.min(0.99, Math.max(0.02, frac + jitter)));
+        const brand = spec.brands[(k * 3 + type.length) % spec.brands.length];
+        const colour = pick(COLOURS);
+        let name = k % 2 === 0 ? `${brand} ${type}` : `${brand} ${colour} ${type}`;
+        if (seenNames.has(name)) name = `${brand} ${colour} ${type}`;
+        if (seenNames.has(name)) name = `${pick(spec.brands)} ${colour} ${type}`;
+        if (seenNames.has(name)) return;
+        seenNames.add(name);
+        products.push({
+          name,
+          price: p,
+          category,
+          stock: stock(),
+          rating: rating(),
+          description: `The ${name} — ${desc}.`,
+        });
       });
-      made++;
     }
   }
   return products;
